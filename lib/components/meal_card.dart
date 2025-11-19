@@ -87,34 +87,7 @@ class MealCard extends StatelessWidget {
                         icon: Icon(Icons.delete),
                         color: Colors.red[700],
                         onPressed: () async {
-                          bool confirm = await showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text("Delete Meal"),
-                                content: Text(
-                                  "Are you sure you want to delete \"${meal.name}\"?",
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: Text("Cancel"),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: Text(
-                                      "Delete",
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-
-                          if (confirm && onDelete != null) {
-                            onDelete!();
-                          }
+                          onDelete!();
                         },
                       ),
                     ],

@@ -3,7 +3,7 @@ import 'package:meal_planner/components/my_textfield.dart';
 import 'package:meal_planner/components/my_buttons.dart';
 import 'package:meal_planner/models/meal.dart';
 import 'package:meal_planner/helpers/validators.dart';
-import 'package:meal_planner/helpers/toast_helper.dart';
+import 'package:meal_planner/helpers/display_validators.dart';
 
 class AddNewMealScreen extends StatefulWidget {
   const AddNewMealScreen({super.key});
