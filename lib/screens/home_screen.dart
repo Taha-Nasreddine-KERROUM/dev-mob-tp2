@@ -1,13 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:meal_planner/components/week_days_card.dart';
+import 'package:meal_planner/models/meal.dart';
+import 'package:meal_planner/models/meals_of_a_day_meals.dart';
 
-class HomeScreen extends StatelessWidget {
-  final List<String> weekDaysList;
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
-  const HomeScreen({
-    super.key,
-    required this.weekDaysList,
-  });
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final List<MealsOfADay> weekDaysList = [
+    MealsOfADay(
+      day: 'Saturday',
+      listOfMealsForADay: [
+        Meal(
+          name: 'Pancakes',
+          imgPath: 'assets/images/pan.jpg',
+          listOfIngredient: ['potato', 'zucchini', 'flour', 'egg', 'egg wash', 'dipping sauce'],
+          identifier: 'sat_breakfast',
+        ),
+      ],
+    ),
+    MealsOfADay(
+      day: 'Sunday',
+      listOfMealsForADay: [],
+    ),
+    MealsOfADay(
+      day: 'Monday',
+      listOfMealsForADay: [],
+    ),
+    MealsOfADay(
+      day: 'Tuesday',
+      listOfMealsForADay: [],
+    ),
+    MealsOfADay(
+      day: 'Wednesday',
+      listOfMealsForADay: [],
+    ),
+    MealsOfADay(
+      day: 'Thursday',
+      listOfMealsForADay: [],
+    ),
+    MealsOfADay(
+      day: 'Friday',
+      listOfMealsForADay: [],
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -16,13 +56,22 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.exit_to_app),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                    (route) => false,
+              );
+            },
           ),
         ],
         title: Center(
           child: Text(
             "Home page",
-            style: TextStyle(),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -31,7 +80,14 @@ class HomeScreen extends StatelessWidget {
         shrinkWrap: true,
         itemCount: weekDaysList.length,
         itemBuilder: (context, index) {
-          return WeekDaysCard(day: weekDaysList[index]);
+          return WeekDaysCard(
+            dayAndItsMealsList: weekDaysList[index],
+            onMealAdded: (Meal meal) {
+              setState(() {
+                weekDaysList[index].listOfMealsForADay.add(meal);
+              });
+            },
+          );
         },
       ),
     );

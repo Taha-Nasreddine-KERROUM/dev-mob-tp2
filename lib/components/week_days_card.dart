@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/models/meals_of_a_day_meals.dart';
+import 'package:meal_planner/models/meal.dart';
 
 class WeekDaysCard extends StatelessWidget {
-  final String day;
+  final MealsOfADay dayAndItsMealsList;
+  final Function(Meal)? onMealAdded;
 
   const WeekDaysCard({
     super.key,
-    required this.day,
+    required this.dayAndItsMealsList,
+    this.onMealAdded,
   });
 
   @override
@@ -30,26 +34,48 @@ class WeekDaysCard extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                day,
-                style: TextStyle(),
+              child: Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Text(
+                  dayAndItsMealsList.day,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 20),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
                   icon: Icon(Icons.visibility),
-                  onPressed: () {},
+                  onPressed: () async {
+                    await Navigator.pushNamed(
+                      context,
+                      '/mealsOfADay',
+                      arguments: dayAndItsMealsList,
+                    );
+                  },
                   color: Colors.orange,
                 ),
-                SizedBox(width: 10),
+                SizedBox(width: 20),
                 IconButton(
                   icon: Icon(Icons.add),
-                  onPressed: () {},
+                  onPressed: () async {
+                    final newMeal = await Navigator.pushNamed(
+                      context,
+                      '/addNewMeal',
+                      arguments: dayAndItsMealsList.day,
+                    );
+
+                    if (newMeal != null && newMeal is Meal) {
+                      onMealAdded?.call(newMeal);
+                    }
+                  },
                   color: Colors.black,
                 ),
               ],
