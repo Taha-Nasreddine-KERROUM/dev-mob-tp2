@@ -5,8 +5,24 @@ import 'package:meal_planner/screens/signup_screen.dart';
 import 'package:meal_planner/screens/meals_of_a_day_screen.dart';
 import 'package:meal_planner/screens/add_new_meal_screen.dart';
 import 'package:meal_planner/screens/ingredients_ofa_meal_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/meal.dart';
+import 'models/meals_of_a_day_meals.dart';
 
-void main() {
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(MealAdapter());
+  Hive.registerAdapter(MealsOfADayAdapter());
   runApp(MyApp());
 }
 
@@ -79,7 +95,7 @@ class _MyAppState extends State<MyApp> {
         '/mealsOfADay': (context) => MealsOfADayScreen(),
         '/addNewMeal': (context) => AddNewMealScreen(),
         '/ingredientsOfAMeal': (context) => IngredientsOfAMealScreen(),
-      },
+      }
     );
   }
 }

@@ -3,12 +3,12 @@ import 'package:meal_planner/models/meal.dart';
 
 class MealCard extends StatelessWidget {
   final Meal meal;
-  final VoidCallback? onDelete;
+  final Function onDeleteMeal;
 
   const MealCard({
     super.key,
     required this.meal,
-    this.onDelete,
+    required this.onDeleteMeal,
   });
 
   @override
@@ -86,8 +86,33 @@ class MealCard extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.delete),
                         color: Colors.red[700],
-                        onPressed: () async {
-                          onDelete!();
+                        iconSize: 20,
+                        onPressed: () {
+                          // Show confirmation dialog
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Delete Meal'),
+                                content: Text('Are you sure you want to delete ${meal.name}?'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      onDeleteMeal();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                       ),
                     ],

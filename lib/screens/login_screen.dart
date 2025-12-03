@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meal_planner/components/my_textfield.dart';
 import 'package:meal_planner/components/my_buttons.dart';
 import 'package:meal_planner/helpers/validators.dart';
@@ -6,10 +7,135 @@ import 'package:meal_planner/helpers/display_validators.dart';
 
 class LoginScreen extends StatelessWidget {
   final GlobalKey<FormState> keyFormState = GlobalKey<FormState>();
-  final TextEditingController userController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController pwdController = TextEditingController();
 
   LoginScreen({super.key});
+
+  Future<void> login(BuildContext context) async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: pwdController.text,
+      );
+
+      if (userCredential.user!.emailVerified) {
+        if (context.mounted) {
+          displaySuccessToast("Login successful!");
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please verify your email address. Check your inbox for the verification link.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Resend',
+                textColor: Colors.white,
+                onPressed: () async {
+                  await userCredential.user!.sendEmailVerification();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Verification email sent!')),
+                  );
+                },
+              ),
+            ),
+          );
+          await FirebaseAuth.instance.signOut();
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred';
+
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Wrong password provided.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email address.';
+      } else if (e.code == 'user-disabled') {
+        message = 'This user account has been disabled.';
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> forgotPassword(BuildContext context) async {
+    String? emailValidation = emailValidationFct(emailController.text);
+
+    if (emailValidation != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a valid email address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: emailController.text.trim(),
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('If an account exists with this email, a password reset link has been sent!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred';
+
+      if (e.code == 'invalid-email') {
+        message = 'Invalid email address.';
+      } else if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+      } else if (e.code == 'missing-email') {
+        message = 'Please enter an email address.';
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +169,7 @@ class LoginScreen extends StatelessWidget {
                   tFHintText: "Email",
                   tFIcon: Icon(Icons.email),
                   isObscure: false,
-                  tFController: userController,
+                  tFController: emailController,
                   tFValidator: (value) => emailValidationFct(value),
                 ),
                 SizedBox(height: 20),
@@ -60,6 +186,7 @@ class LoginScreen extends StatelessWidget {
                 MyTextButton(
                   buttonLabel: "Forgot Password",
                   onPressedFct: () {
+                    forgotPassword(context);
                   },
                 ),
                 SizedBox(height: 20),
@@ -69,7 +196,7 @@ class LoginScreen extends StatelessWidget {
                   onPressedFct: () {
                     if (keyFormState.currentState!.validate()) {
                       displaySuccessToast("Login successful!");
-                      Navigator.pushReplacementNamed(context, '/home');
+                      login(context);
                     } else {
                       displayAToast();
                     }

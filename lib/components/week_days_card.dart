@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal_planner/models/meals_of_a_day_meals.dart';
 import 'package:meal_planner/models/meal.dart';
 
@@ -54,11 +55,22 @@ class WeekDaysCard extends StatelessWidget {
                 IconButton(
                   icon: Icon(Icons.visibility),
                   onPressed: () async {
-                    await Navigator.pushNamed(
-                      context,
-                      '/mealsOfADay',
-                      arguments: dayAndItsMealsList,
-                    );
+                    try {
+                      final dayMealsBox = await Hive.openBox<MealsOfADay>('MealsBDD');
+                      final mealsData = dayMealsBox.get(dayAndItsMealsList.day);
+
+                      if (mealsData != null) {
+                        await Navigator.pushNamed(
+                          context,
+                          '/mealsOfADay',
+                          arguments: mealsData,
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error loading meals: $e')),
+                      );
+                    }
                   },
                   color: Colors.orange,
                 ),
@@ -66,14 +78,32 @@ class WeekDaysCard extends StatelessWidget {
                 IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () async {
-                    final newMeal = await Navigator.pushNamed(
-                      context,
-                      '/addNewMeal',
-                      arguments: dayAndItsMealsList.day,
-                    );
+                    try {
+                      final newMeal = await Navigator.pushNamed(
+                        context,
+                        '/addNewMeal',
+                        arguments: dayAndItsMealsList.day,
+                      );
 
-                    if (newMeal != null && newMeal is Meal) {
-                      onMealAdded?.call(newMeal);
+                      if (newMeal != null && newMeal is Meal) {
+                        final dayMealsBox = await Hive.openBox<MealsOfADay>('MealsBDD');
+
+                        final currentData = dayMealsBox.get(dayAndItsMealsList.day);
+
+                        if (currentData != null) {
+                          currentData.listOfMealsForADay.add(newMeal);
+
+                          await dayMealsBox.put(dayAndItsMealsList.day, currentData);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Meal added successfully!')),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error adding meal: $e')),
+                      );
                     }
                   },
                   color: Colors.black,
